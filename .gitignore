@@ -1,0 +1,15 @@
+# Ignore the virtual environment
+sihenv/
+venv/
+env/
+
+# Ignore Python cache files
+__pycache__/
+*.pyc
+
+# Ignore system files
+.DS_Store
+
+# Optional: If you want to force users to generate their own data, uncomment these:
+# data/delivery_history.csv
+# models/delivery_time_predictor.pkl

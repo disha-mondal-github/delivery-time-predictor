@@ -1,0 +1,26 @@
+(sihenv) D:\DOWNLOADS\delivery-time-predictor>py model.py
+Loading training data...
+Loaded 20000 delivery records
+Building profiles and features...
+
+Starting GPU Model Tournament...
+   [RandomForest (CPU)]
+      Exact Match:  32.02%
+      Top-3 Accuracy: 84.45%
+   [XGBoost (GPU)]
+      Exact Match:  34.83%
+      Top-3 Accuracy: 87.85%
+   [LightGBM (GPU)]
+      Exact Match:  34.70%
+      Top-3 Accuracy: 88.60%
+
+Winner: XGBoost (GPU)
+----------------------------------------
+PERFORMANCE METRICS
+----------------------------------------
+Best Model:         XGBoost (GPU)
+Top-1 Accuracy:     34.83% (Exact Match)
+Top-3 Accuracy:     87.85% (Recommendation Hit)
+Recommendation Lift: +53.02%
+----------------------------------------
+Model saved successfully!

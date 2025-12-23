@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Delivery Predictor</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-100 min-h-screen font-sans">
+    
+    <div class="container mx-auto px-4 py-8 max-w-6xl">
+        
+        <div class="flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
+            <div>
+                <h1 class="text-3xl font-bold text-gray-800 flex items-center">
+                    <i class="fas fa-truck-fast text-blue-600 mr-3"></i>
+                    Smart Delivery Predictor
+                </h1>
+                <p class="text-gray-500 mt-1 ml-1">AI-Powered Time Slot Recommendation Engine</p>
+            </div>
+            
+            <div class="bg-white p-4 rounded-xl shadow-sm flex divide-x divide-gray-200">
+                <div class="px-6 text-center">
+                    <p class="text-xs text-gray-500 uppercase tracking-wider font-semibold">Active Model</p>
+                    <p class="text-sm font-bold text-purple-600 mt-1" id="model-type">Loading...</p>
+                </div>
+                <div class="px-6 text-center">
+                    <p class="text-xs text-gray-500 uppercase tracking-wider font-semibold">Exact Match</p>
+                    <p class="text-xl font-bold text-blue-600" id="acc-score">--%</p>
+                </div>
+                <div class="px-6 text-center">
+                    <p class="text-xs text-gray-500 uppercase tracking-wider font-semibold">Recommendation</p>
+                    <p class="text-xl font-bold text-green-600" id="top3-score">--%</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+            
+            <div class="lg:col-span-4 space-y-6">
+                <div class="bg-white rounded-xl shadow-lg p-6 border border-gray-100">
+                    <h2 class="text-xl font-bold text-gray-800 mb-6 flex items-center">
+                        <i class="fas fa-sliders-h mr-2 text-gray-400"></i> Prediction Params
+                    </h2>
+                    
+                    <form id="predictForm" class="space-y-5">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Customer ID</label>
+                            <div class="relative">
+                                <span class="absolute left-3 top-3 text-gray-400"><i class="fas fa-id-card"></i></span>
+                                <input type="text" id="customer_id" 
+                                    class="w-full pl-10 pr-3 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition" 
+                                    placeholder="e.g. CUST_0050" value="CUST_0050" required>
+                            </div>
+                            <p class="text-xs text-gray-400 mt-1 ml-1">Name is auto-fetched from DB</p>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Delivery Date</label>
+                            <div class="relative">
+                                <span class="absolute left-3 top-3 text-gray-400"><i class="fas fa-calendar-alt"></i></span>
+                                <input type="date" id="delivery_date" 
+                                    class="w-full pl-10 pr-3 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition">
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Zone / Postal Code</label>
+                            <div class="relative">
+                                <span class="absolute left-3 top-3 text-gray-400"><i class="fas fa-map-marker-alt"></i></span>
+                                <select id="postal_code" class="w-full pl-10 pr-3 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition bg-white">
+                                    <option value="">Auto (Use Customer Default)</option>
+                                    <optgroup label="Residential (Prefers Evenings)">
+                                        <option value="10001">10001 - Downtown Res.</option>
+                                        <option value="10002">10002 - Suburb North</option>
+                                    </optgroup>
+                                    <optgroup label="Business (Prefers 9-5)">
+                                        <option value="20001">20001 - Fin. District</option>
+                                        <option value="20002">20002 - Tech Park</option>
+                                    </optgroup>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Type</label>
+                                <select id="order_type" class="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white">
+                                    <option value="standard">Standard</option>
+                                    <option value="express">Express</option>
+                                    <option value="bulky">Bulky</option>
+                                    <option value="fragile">Fragile</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Value ($)</label>
+                                <input type="number" id="order_value" value="50" 
+                                    class="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
+                            </div>
+                        </div>
+
+                        <button type="submit" class="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold py-3 px-4 rounded-lg transition duration-200 shadow-lg transform hover:-translate-y-0.5">
+                            Predict Best Slots
+                        </button>
+                    </form>
+                </div>
+
+                <div class="bg-gray-50 rounded-xl p-6 border border-gray-200">
+                    <h3 class="font-semibold text-gray-700 mb-3 text-sm uppercase tracking-wide">System Controls</h3>
+                    <button id="trainBtn" class="w-full bg-white border border-gray-300 text-gray-600 hover:bg-white hover:text-blue-600 hover:border-blue-400 font-medium py-2 px-4 rounded-lg transition flex justify-center items-center shadow-sm">
+                        <i class="fas fa-sync-alt mr-2"></i> Retrain Model
+                    </button>
+                    <p class="text-xs text-gray-400 mt-2 text-center">Retraining pulls latest CSV data</p>
+                </div>
+            </div>
+
+            <div class="lg:col-span-8">
+                
+                <div id="customer-card" class="bg-white rounded-xl shadow-md p-6 mb-6 hidden border-l-4 border-blue-500 flex items-center justify-between animate-fade-in-up">
+                    <div class="flex items-center">
+                        <div class="h-14 w-14 rounded-full bg-blue-50 flex items-center justify-center text-blue-600 font-bold text-2xl mr-4 shadow-inner">
+                            <i class="fas fa-user-circle"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-xl font-bold text-gray-800" id="res-cust-name">Loading...</h3>
+                            <div class="flex items-center text-sm text-gray-500 mt-1">
+                                <span class="bg-gray-100 px-2 py-0.5 rounded mr-2">ID: <span id="res-cust-id">--</span></span>
+                                <span><i class="fas fa-map-pin mr-1 text-gray-400"></i> Zone: <span id="res-postal" class="font-medium text-gray-700">--</span></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="results" class="hidden space-y-4">
+                    <h3 class="text-lg font-bold text-gray-700 mb-4 flex items-center">
+                        <i class="fas fa-star text-yellow-400 mr-2"></i> Recommended Slots
+                    </h3>
+                    <div id="predictions-container" class="space-y-4">
+                        </div>
+                </div>
+                
+                <div id="empty-state" class="bg-white rounded-xl shadow-sm border border-dashed border-gray-300 h-96 flex flex-col justify-center items-center">
+                    <div class="bg-gray-50 p-6 rounded-full mb-4">
+                        <i class="fas fa-search-location text-5xl text-gray-300"></i>
+                    </div>
+                    <h3 class="text-xl font-medium text-gray-600">No predictions yet</h3>
+                    <p class="text-gray-400 mt-2">Enter customer details on the left to start.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- 1. Initialization ---
+        const tomorrow = new Date();
+        tomorrow.setDate(tomorrow.getDate() + 1);
+        document.getElementById('delivery_date').valueAsDate = tomorrow;
+
+        loadStats();
+
+        // --- 2. Load Stats Function ---
+        async function loadStats() {
+            try {
+                const res = await fetch('/api/stats');
+                const data = await res.json();
+                
+                if(data.accuracy) {
+                    document.getElementById('acc-score').textContent = (data.accuracy * 100).toFixed(1) + '%';
+                    document.getElementById('top3-score').textContent = (data.top_3_accuracy * 100).toFixed(1) + '%';
+                    document.getElementById('model-type').textContent = data.model_type || 'Ensemble';
+                }
+            } catch(e) { console.error("Stats load failed", e); }
+        }
+
+        // --- 3. Prediction Handler ---
+        document.getElementById('predictForm').onsubmit = async (e) => {
+            e.preventDefault();
+            
+            // UI Loading State
+            const btn = e.target.querySelector('button');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-circle-notch fa-spin mr-2"></i> Analyzing...';
+            btn.disabled = true;
+
+            try {
+                // API Call
+                const res = await fetch('/api/predict', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        customer_id: document.getElementById('customer_id').value,
+                        delivery_date: document.getElementById('delivery_date').value,
+                        postal_code: document.getElementById('postal_code').value,
+                        order_type: document.getElementById('order_type').value,
+                        order_value: document.getElementById('order_value').value
+                    })
+                });
+                
+                const data = await res.json();
+                
+                if (data.success) {
+                    displayResults(data);
+                } else {
+                    alert('Error: ' + data.error);
+                }
+            } catch (err) {
+                alert('Connection to server failed. Is Flask running?');
+            } finally {
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            }
+        };
+
+        // --- 4. Display Logic ---
+        function displayResults(data) {
+            document.getElementById('empty-state').classList.add('hidden');
+            document.getElementById('results').classList.remove('hidden');
+            document.getElementById('customer-card').classList.remove('hidden');
+
+            // Fill Customer Info
+            document.getElementById('res-cust-name').textContent = data.customer_name;
+            document.getElementById('res-cust-id').textContent = data.customer_id;
+            document.getElementById('res-postal').textContent = data.used_postal_code || 'Default';
+
+            const container = document.getElementById('predictions-container');
+            container.innerHTML = '';
+
+            data.predictions.forEach((pred, index) => {
+                const isTop = index === 0;
+                const confidencePercent = (pred.confidence * 100).toFixed(1);
+                
+                // Dynamic styling for Top 1 vs others
+                const borderClass = isTop ? 'border-green-500 shadow-md ring-1 ring-green-100' : 'border-gray-200';
+                const rankBadge = isTop 
+                    ? `<div class="bg-green-100 text-green-700 h-8 w-8 rounded-full flex items-center justify-center font-bold mr-4"><i class="fas fa-check"></i></div>` 
+                    : `<div class="bg-gray-100 text-gray-500 h-8 w-8 rounded-full flex items-center justify-center font-bold mr-4">${index + 1}</div>`;
+
+                const html = `
+                    <div class="bg-white rounded-lg p-5 border ${borderClass} transition hover:shadow-lg flex flex-col md:flex-row md:items-center justify-between group">
+                        <div class="flex items-center mb-3 md:mb-0">
+                            ${rankBadge}
+                            <div>
+                                <h4 class="text-xl font-bold text-gray-800">${pred.time_slot}</h4>
+                                <p class="text-sm text-gray-500"><i class="fas fa-info-circle mr-1 text-blue-400"></i> ${pred.reason}</p>
+                            </div>
+                        </div>
+                        
+                        <div class="flex items-center justify-between md:justify-end w-full md:w-auto">
+                            <div class="text-right mr-4">
+                                <div class="text-xs text-gray-400 uppercase font-semibold">Confidence</div>
+                                <div class="text-lg font-bold ${isTop ? 'text-green-600' : 'text-gray-600'}">${confidencePercent}%</div>
+                            </div>
+                            ${isTop ? `
+                            <button onclick="alert('Slot ${pred.time_slot} Confirmed!')" class="bg-green-50 hover:bg-green-100 text-green-700 px-4 py-2 rounded-lg font-medium text-sm transition">
+                                Select
+                            </button>` : ''}
+                        </div>
+                    </div>
+                `;
+                container.innerHTML += html;
+            });
+        }
+
+        // --- 5. Retrain Logic ---
+        document.getElementById('trainBtn').onclick = async () => {
+            if(!confirm('Retrain model? This creates a new model tournament using the latest data.')) return;
+            
+            const btn = document.getElementById('trainBtn');
+            const originalHTML = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-cog fa-spin mr-2"></i> Training...';
+            btn.disabled = true;
+            
+            try {
+                const res = await fetch('/api/train', {method: 'POST'});
+                const data = await res.json();
+                if(data.success) {
+                    alert(`Training Complete!\nWinner: ${data.metrics.model_type || 'Unknown'}\nTop-3 Accuracy: ${(data.metrics.top_3_accuracy*100).toFixed(1)}%`);
+                    location.reload(); // Refresh to update stats
+                } else {
+                    alert('Error: ' + data.error);
+                }
+            } catch(e) {
+                alert('Training failed.');
+            } finally {
+                btn.innerHTML = originalHTML;
+                btn.disabled = false;
+            }
+        };
+    </script>
+    
+    <style>
+        .animate-fade-in-up { animation: fadeInUp 0.5s ease-out; }
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</body>
+</html>
