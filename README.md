@@ -152,5 +152,3 @@ By optimizing for **Top-3 Accuracy**, we ensure the user is presented with valid
 ## 📄 License
 
 MIT License. Feel free to use this project for learning or portfolio purposes.
-
-```
